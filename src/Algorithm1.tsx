@@ -1,10 +1,19 @@
 
+import {JSONforGraph} from "./graphJSON"
+import inputData from "./inputData.json";
+
+
 //general functions
 function angleOffAxis(edge: DirectedEdge): number{
   const [vecX, vecY] = edge.getVector();
   const t = Math.atan2(vecY, vecX);
   return t;
 }
+
+// function stringBuilder(s1: string, s2: string): string{
+//   const s: string = s1.concat(s2);
+//   return s;
+// } 
 
 class Vertex {
   name: string = "";
@@ -22,7 +31,7 @@ class Vertex {
     this.edgeStar.sort((a,b) => a.angleOffAxis - b.angleOffAxis)
   }
 
-  getNextStarEdge(currentEdge: DirectedEdge):DirectedEdge{
+  getNextEdgeFromStar(currentEdge: DirectedEdge):DirectedEdge{
     const twinEdge = currentEdge.twin;
     const currentIndex = this.edgeStar.indexOf(twinEdge);
     let nextIndex = currentIndex + 1;
@@ -33,7 +42,8 @@ class Vertex {
     const nextEdge = this.edgeStar[nextIndex];
     return nextEdge;
   }
-}
+}// closes Vertex class
+
 
 class DirectedEdge {
   name: string = "";
@@ -56,18 +66,19 @@ class DirectedEdge {
     const By: number = this.endVertex.y;
     return [(Bx-Ax), (By-Ay)];
   }
-}
+} //closes DirectedEdge class
+
 
 class Polygon{
   name: string = "";
   edges: DirectedEdge[] = [];
   neighbors: Polygon[] = [];
 
-  constructor(initialEdge: DirectedEdge){
-    this.edges.push(initialEdge)
+  constructor(){
+    //this.edges.push(initialEdge)
   }
 
-  isClockwise(this: Polygon){
+  pathIsClockwise(this: Polygon): boolean{
     let total = 0
     for(let e of this.edges){
       const v1 = e.startVertex;
@@ -82,21 +93,17 @@ class Polygon{
       return false;
     }
   }
+}// closes Polygon class
 
-
-}
 
 class Graph{
   vertices: Vertex[] = [];
   edges: DirectedEdge[] = [];
   polygons: Polygon[] = [];
 
-  constructor(vertices: number[][], edges: number[][]){
-    this.generateGraph(vertices, edges);
-  }
 
   addEdgeTwins(v1: Vertex, v2: Vertex){
-    //create directed edge and twin for each given edge
+    //create directed edge and twin for each given edge 
     const edge1 = new DirectedEdge(v1, v2);
     const edge2 = new DirectedEdge(v2, v1);
 
@@ -115,29 +122,8 @@ class Graph{
     v2.edgeStar.push(edge2);
   }
 
-  getMinVertex(this: Graph):Vertex | undefined{
-    if (this.vertices.length === 0){
-      return undefined;
-    }
 
-    let minSum: number | undefined = undefined;
-    let minPt: Vertex | undefined = undefined;
-
-    for(let v of this.vertices){
-      const newSum = v.x + v.y;
-      if(minSum === undefined){
-        minSum = newSum;
-        minPt = v;
-      }
-      else if(newSum < minSum){
-        minSum = newSum;
-        minPt = v;
-      } 
-    }
-    return minPt;
-  }
-
-  generateGraph(inputVertices: number[][], inputEdges: number[][]){
+  fromVerticiesEdges(inputVertices: number[][], inputEdges: number[][]){
     //add vertices to graph
     for(let [x, y] of inputVertices){
       const vertex = new Vertex(x,y);
@@ -157,10 +143,9 @@ class Graph{
       v.orderEdgeStar();
     }
 
-    //add cycles as Polygon to graph
+    //add polygon cycles to graph
     let visitedEdges = new Set();
-    
-    //get polygon cycles
+
     for(let edge of this.edges){
       //if you've already been to this edge, move on
       if(visitedEdges.has(edge)){
@@ -170,12 +155,12 @@ class Graph{
       let currentEdge = edge;
       visitedEdges.add(currentEdge);
       let origin = edge.startVertex;
-      let polygon = new Polygon(edge);
-      //polygon.edges.push(edge);
+      let polygon = new Polygon();
+      polygon.edges.push(edge);
 
       while(origin !== currentEdge.endVertex){
         let endVertex = currentEdge.endVertex;
-        let nextEdge = endVertex.getNextStarEdge(currentEdge);
+        let nextEdge = endVertex.getNextEdgeFromStar(currentEdge);
         
         if(visitedEdges.has(nextEdge)){
           break;
@@ -186,40 +171,130 @@ class Graph{
       }
 
       //add polygon to graph if it is an inside polygon
-      if(polygon.isClockwise()){
+      if(polygon.pathIsClockwise()){
         polygon.name = "p" + this.polygons.length.toString();
         this.polygons.push(polygon);
       }
     }
-  } //closes generate graph function
-} //closes graph class
+  } 
 
 
-//const inV: number[][] = [[0,0], [2,0], [2,2], [0,2]];
-//const inE: number[][] = [[0,1], [1,2], [0,2], [0,3], [2,3]];
+  fromVerticiesEdgesPolygons(inputVertices: number[][], inputEdges: number[][], inputPolygons: number[][]){
+        //add vertices to graph
+        for(let [x, y] of inputVertices){
+          const vertex = new Vertex(x,y);
+          vertex.name = "v" + this.vertices.length.toString();
+          this.vertices.push(vertex);
+        }
 
-const inV: number[][] = [[1,2], [3,2], [3,3],[5,3], [5,1], [4,1], [2,1]];
-const inE: number[][] = [[0, 1], [1,2], [2,3], [3,4], [4,5], [5,6], [6,1], [5,1]];
+        //add edges to graph
+        //every 2nd edge is a twin, so you can skip initiating adding the edge for every other edge
+        for(let i= 0; i< inputEdges.length; i+=2){
+          let [v1Index, v2Index] = inputEdges[i];
 
-// "polygon" : {vertices:
-//               edges,
-//             }
+          const v1 = this.vertices[v1Index];
+          const v2 = this.vertices[v2Index];
+          this.addEdgeTwins(v1, v2)
+        }
+    
+        //order vertex edge stars
+        for(let v  of this.vertices){
+          v.orderEdgeStar();
+        }
 
-function stringBuilder(s1: string, s2: string): string{
-  const s: string = s1.concat(s2);
-  return s;
-} 
+        //add polygons to graph
+        for(let p of inputPolygons){
+          let polygon = new Polygon();
+          for(let eIndex of p){
+            let edge = this.edges[eIndex];
+            polygon.edges.push(edge);
+          }
+          polygon.name = "p" + this.polygons.length.toString();
+          this.polygons.push(polygon);
+        }
+  }
 
-export function testFunction(): string{
-  let s: string = "Starting this test";
-  //console.log(s);
+  toJSON():JSONforGraph{
+    let vertexForJson = []
+    for(let vertex of this.vertices){
+      let x = vertex.x;
+      let y = vertex.y;
+      //add vertex as [x, y]
+      vertexForJson.push([x,y])
+    }
 
-  const myGraph = new Graph(inV , inE);
-  console.log("got this many polygon: " + myGraph.polygons.length)
+    let edgeForJson = []
+    for(let edge of this.edges){
+      let startVIndex = this.vertices.indexOf(edge.startVertex);
+      let endVIndex = this.vertices.indexOf(edge.endVertex);
+      //add edge as [startVIndex, endVIndex]
+      edgeForJson.push([startVIndex, endVIndex]);
+    }
+
+    let polygonForJson = []
+    for(let polygon of this.polygons){
+      let polygonEdges = [];
+      for(let edge of polygon.edges){
+        let edgeIndex = this.edges.indexOf(edge);
+        polygonEdges.push(edgeIndex);
+      }
+      //add polygon as [edgeIndex1,2,3...]
+      polygonForJson.push(polygonEdges)
+    }
+
+    const json: JSONforGraph = {vertices: vertexForJson, edges: edgeForJson, polygons: polygonForJson}
+    return(json)
+
+  }
+
+} //closes Graph class
+
+
+
+export function algorithm1(): JSONforGraph{
+  let s: string = "Starting algorithm 1";
+  console.log(s);
+
+  let myGraph = new Graph();
+  let input = inputData;
+  myGraph.fromVerticiesEdges(input.vertices, input.edges)
+  const gJson = myGraph.toJSON();
+  console.log("graph")
   console.log(myGraph);
-
-  //const jsonGraph = JSON.stringify(myGraph.polygons);
-
-  //console.log(s);
-  return s;
+  console.log("gjson");
+  console.log(gJson);
+  
+  return gJson;
 }
+
+export function algorithm2(inFrom1: JSONforGraph){
+
+  let myGraph = new Graph();
+  console.log("Starting algorithm 2")
+  myGraph.fromVerticiesEdgesPolygons(inFrom1.vertices, inFrom1.edges, inFrom1.polygons);
+  console.log("got graph for 2")
+  console.log(myGraph);
+  
+}
+
+
+// const inV: number[][] = [[0,0], [2,0], [2,2], [0,2]];
+// const inE: number[][] = [[0,1], [1,2], [0,2], [0,3], [2,3]];
+
+// const inV: number[][] = [[1,2], [3,2], [3,3],[5,3], [5,1], [4,1], [2,1]];
+// const inE: number[][] = [[0, 1], [1,2], [2,3], [3,4], [4,5], [5,6], [6,1], [5,1]];
+
+// [
+//   {"testcase1": 
+//       {
+//           "vertices": [[0,0], [2,0], [2,2], [0,2]],
+//           "edges":[[0,1], [1,2], [0,2], [0,3], [2,3]]
+//       }
+//   },
+//   {"testcase2":
+//       {
+//           "vertices": [[1,2], [3,2], [3,3],[5,3], [5,1], [4,1], [2,1]],
+//           "edges": [[0, 1], [1,2], [2,3], [3,4], [4,5], [5,6], [6,1], [5,1]]
+//       }
+//   }
+// ]
