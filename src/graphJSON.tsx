@@ -1,5 +1,3 @@
-//import inputData from "./inputData.json";
-
 export interface JSONforGraph {
     vertices: number[][];
     edges: number[][];

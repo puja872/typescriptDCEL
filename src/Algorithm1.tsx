@@ -1,6 +1,6 @@
 
 import {JSONforGraph} from "./graphJSON"
-import inputData from "./inputData.json";
+//import inputData from "./inputData.json";
 
 
 //general functions
@@ -74,10 +74,6 @@ class Polygon{
   edges: DirectedEdge[] = [];
   neighbors: Polygon[] = [];
 
-  constructor(){
-    //this.edges.push(initialEdge)
-  }
-
   pathIsClockwise(this: Polygon): boolean{
     let total = 0
     for(let e of this.edges){
@@ -135,7 +131,7 @@ class Graph{
     for(let [v1Index, v2Index] of inputEdges){
       const v1 = this.vertices[v1Index];
       const v2 = this.vertices[v2Index];
-      this.addEdgeTwins(v1, v2)
+      this.addEdgeTwins(v1, v2);
     }
 
     //order vertex edge stars
@@ -247,13 +243,16 @@ class Graph{
 
   }
 
+  checkOutsideInputs(){
+
+  }
+
 } //closes Graph class
 
 
 
-export function algorithm1(): JSONforGraph{
-  let s: string = "Starting algorithm 1";
-  console.log(s);
+export function algorithm1(inputData:{vertices: number[][];edges: number[][];}): JSONforGraph{
+  console.log("Starting algorithm 1");
 
   let myGraph = new Graph();
   let input = inputData;
@@ -293,6 +292,7 @@ export function algorithm2(inFrom1: JSONforGraph){
 //   },
 //   {"testcase2":
 //       {
+      //     "description": "This is not a square",
 //           "vertices": [[1,2], [3,2], [3,3],[5,3], [5,1], [4,1], [2,1]],
 //           "edges": [[0, 1], [1,2], [2,3], [3,4], [4,5], [5,6], [6,1], [5,1]]
 //       }
