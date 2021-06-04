@@ -16,12 +16,25 @@
   padding:25px;
 }
 
-.Output-data{
+.Input-Output{
   background-color: #ffffff;
+  display: flex;
   max-height: 40vh;
   padding:25px;
-  font-size: calc(5px + 2vmin);
+  font-size: calc(2px + 2vmin);
   text-align:left;
+}
+
+.Input-data{
+  width:15%;
+  display: flex;
+  justify-content: right;
+  align-items: center;
+
+}
+
+.Output-data{
+  width: 85%;
 }
 
 .SVG{
@@ -30,8 +43,8 @@
 .Polygons{
   stroke:black;
   stroke-width: calc(2vmin/600);
-  /* transform: scale(1,-1); */
 }
+
 
 
 
