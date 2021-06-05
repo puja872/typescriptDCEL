@@ -1,79 +1,69 @@
-import React,{useState} from 'react';
+import React from 'react';
 import './App.css';
 import {GraphSVG} from "./graphSVG"
-import inputData from "./InputData.json";
-import {algorithm1, algorithm2, algorithm4}  from "./Algorithms"
-import {algorithm3}  from "./Algorithm3"
+import {algorithm1, algorithm3,algorithm2, algorithm4}  from "./Algorithms"
 import { stringBuilder } from './Utils';
-
-
-
-let output1 = algorithm1(inputData);
-const test2 = algorithm2(output1);
-const output3 = algorithm3(output1, 1.5,3.5);
-const test4 = algorithm4(output1);
-console.log(test2);
-//console.log(test3);
-//console.log(test4);
-console.log("done");
-
-let text1 = "algorithm 1: details";
-let text2 = "algorithm 2: details";
-let text3 = stringBuilder("algorithm 3: ", output3);
-let text4 = "algorithm 4: details";
-
-const options = [
-  { value: 'chocolate', label: 'Chocolate' },
-  { value: 'strawberry', label: 'Strawberry' },
-  { value: 'vanilla', label: 'Vanilla' },
-];
+import testData from "./TestData.json"
 
 
 function App() {
-//   let state = {
-//     keyword: 'test', 
-//     value: 'banana'
-//  }
-
-  const [foobar, setFoobar] = React.useState("N/A");
-  //const [baz, setBaz] = React.useState({});
-
-  // function handleOnChange(e) {
-  //   setFoobar(e.target.value)
-  //   let my_data = algorithm1(...)
-  //   setBaz(my_data)
-  // }
-
-  //let [currentValue,setValue]=useState('');
+  //dropdown state
+  const [testCase, setTestCase] = React.useState("0");
+  let testCaseIndex: number = +testCase;
   
-  // function setValue(e: string){
-  //   state.value = e;
+  //get test case data
+  const dataGraph = {vertices: testData[testCaseIndex].vertices, edges: testData[testCaseIndex].edges}
+  //let title = testData[testCaseIndex].title;
+  let description = testData[testCaseIndex].description;
+  let neighborOrigin = testData[testCaseIndex].neighborOrigin;
+  let pointInPolygon: [number,number] = [testData[testCaseIndex].pointInPolygon[0],testData[testCaseIndex].pointInPolygon[1]];
 
-  //   console.log(e);
-  // }
+  //run algorithms
+  let output1 = algorithm1(dataGraph);
+  let output2 = algorithm2(output1, neighborOrigin);
+  let output3 = algorithm3(output1, pointInPolygon);
+  let output4 = algorithm4(output1, neighborOrigin);
+
+  //display text
+  let descriptionText = stringBuilder("Description: ", description);
+  const text1 = "algorithm 1: found " + output1.polygons.length.toString() + " polygons";
+  const text2 = "algorithm 2: " + "Polygon " + output2[0] + " neighbors- " + output2[1];
+  const text3 = "algorithm 3: " + "Point [" + pointInPolygon[0] + ","+ pointInPolygon[1] + "] is in " + output3;
+  const text4 = "algorithm 4: " + output4;
+
+  function dropdownOptions (){
+    let options = [];
+    for(let i =0; i<testData.length; i++){
+      const name = testData[i].title;
+      const uniqueKey = "option" + i.toString();
+      options.push(
+        <option value={i} key={uniqueKey}>{name}</option>
+      )
+    }
+    return options;
+  }
+  
+  function handleOnChange(e: string){
+    setTestCase(e);
+    const testCaseIndex: number = +e;
+  }
 
 
-  const data = output1;
   return (
     <div className="App">
-      {/* <GraphSVG data={baz} /> */}
-      <GraphSVG data={data} />
+      <GraphSVG data={output1} />
       <div className="Input-Output"> 
         <div className="Input-data">
-        <select id = "dropdown" onChange={(e) =>setFoobar(e.target.value)} value={foobar}>
-            <option value="N/A">N/A</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
+          <select id = "dropdown" onChange={(e) =>handleOnChange(e.target.value)} value={testCase}>
+            {dropdownOptions()}
           </select>
         </div>
-        
         <div className="Output-data">
-          <div className="Algorithm1-text">{text1}</div>
-          <div className="Algorithm2-text">{text2}</div>
-          <div className="Algorithm3-text">{text3}</div>
-          <div className="Algorithm4-text">{text4}</div>
+          <div className="TestCaseOutputText">{descriptionText}</div>
+          <div className="TestCaseOutputText">{text1}</div>
+          <div className="TestCaseOutputText">{text2}</div>
+          <div className="TestCaseOutputText">{text3}</div>
+          <div className="TestCaseOutputText">{text4}</div>
         </div>
       </div>
     </div>

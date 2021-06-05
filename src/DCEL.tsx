@@ -309,7 +309,7 @@ export class DCEL{
    * @param polygon 
    * @returns 
    */
-  findPolygonNeighbors(polygon: Polygon){
+  findPolygonNeighbors(polygon: Polygon): Polygon[]{
     let allNeighbors: Polygon[] = []
     for(let edge of polygon.edges){
       if(edge.twin.polygon !== undefined){
@@ -325,11 +325,8 @@ export class DCEL{
    * @param originPolygon 
    * @returns 
    */
-  findPolygonNeighborLayers(originPolygon: Polygon){
-    //console.log("start finding");
-    //console.log(originPolygon);
-    
-    let neighborLayer: String[][] = [[]];
+  findPolygonNeighborLayers(originPolygon: Polygon): string[][]{
+    let neighborLayer: string[][] = [[]];
     neighborLayer[0].push(originPolygon.name);
     let visitedPolygons: Set<Polygon> = new Set();
     let visitQueue: Polygon[] = [originPolygon];
@@ -345,11 +342,9 @@ export class DCEL{
         for(let ptest of visitQueue){
           pname = stringBuilder(pname, ptest.name)
         }
-        //console.log("polygons in queue: " + pname);
 
         //get polygon and remove from queue
         let currentPolygon = visitQueue[0];
-        //console.log("at polygon: " + currentPolygon.name);
         visitQueue.splice(0,1);
         
         //mark as visited
@@ -374,11 +369,8 @@ export class DCEL{
       }
       layerCount += 1;
     }
-
+    neighborLayer.splice(neighborLayer.length-1,1);
     return neighborLayer;
-
-    
-
   }
 
   checkOutsideInputs(){
