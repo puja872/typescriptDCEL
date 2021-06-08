@@ -6,33 +6,38 @@ import { stringBuilder } from './Utils';
 import testData from "./TestData.json"
 
 
+
+/**
+ * Runs the algorithms and creates simple UI using React components to output html
+ * @returns html for UI
+ */
 function App() {
   //dropdown state
-  const [testCase, setTestCase] = React.useState("0");
+  let [testCase, setTestCase] = React.useState("0");
   let testCaseIndex: number = +testCase;
   
   //get test case data
   const dataGraph = {vertices: testData[testCaseIndex].vertices, edges: testData[testCaseIndex].edges}
   //let title = testData[testCaseIndex].title;
-  let description = testData[testCaseIndex].description;
-  let neighborOrigin = testData[testCaseIndex].neighborOrigin;
-  let pointInPolygon: [number,number] = [testData[testCaseIndex].pointInPolygon[0],testData[testCaseIndex].pointInPolygon[1]];
+  const description = testData[testCaseIndex].description;
+  const neighborOrigin = testData[testCaseIndex].neighborOrigin;
+  const pointInPolygon: [number,number] = [testData[testCaseIndex].pointInPolygon[0],testData[testCaseIndex].pointInPolygon[1]];
 
   //run algorithms
-  let output1 = algorithm1(dataGraph);
-  let output2 = algorithm2(output1, neighborOrigin);
-  let output3 = algorithm3(output1, pointInPolygon);
-  let output4 = algorithm4(output1, neighborOrigin);
+  const output1 = algorithm1(dataGraph);
+  const output2 = algorithm2(output1, neighborOrigin);
+  const output3 = algorithm3(output1, pointInPolygon);
+  const output4 = algorithm4(output1, neighborOrigin);
 
-  //display text
+  //create display text
   let descriptionText = stringBuilder("Description: ", description);
   const text1 = "algorithm 1: found " + output1.polygons.length.toString() + " polygons";
-  const text2 = "algorithm 2: " + "Polygon " + output2[0] + " neighbors- " + output2[1];
-  const text3 = "algorithm 3: " + "Point [" + pointInPolygon[0] + ","+ pointInPolygon[1] + "] is in " + output3;
+  const text2 = "algorithm 2: Polygon " + output2[0] + " neighbors- " + output2[1];
+  const text3 = "algorithm 3: Point [" + pointInPolygon[0] + ","+ pointInPolygon[1] + "] is in " + output3;
   const text4 = "algorithm 4: " + output4;
 
   function dropdownOptions (){
-    let options = [];
+    const options = [];
     for(let i =0; i<testData.length; i++){
       const name = testData[i].title;
       const uniqueKey = "option" + i.toString();
@@ -43,9 +48,10 @@ function App() {
     return options;
   }
   
+  //handles the dropdown list updates
   function handleOnChange(e: string){
     setTestCase(e);
-    const testCaseIndex: number = +e;
+    console.log("Updated graph")
   }
 
 

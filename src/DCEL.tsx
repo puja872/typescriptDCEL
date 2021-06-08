@@ -1,27 +1,36 @@
-import {jsonGraph} from "./Utils"
-import {stringBuilder} from "./Utils"
+import {jsonGraph, stringBuilder} from "./Utils"
 
 //general functions
+/** brief, one line description
+ * 
+ * Describe what this is doing, also because it has a complex return type,
+ * describe the return type here, too
+ * 
+ * linear in the number of edges of a polygon, O(n) where n is number of edges in polygon
+ */
+
 /**
+ * Returns the angle between the directed edge and horizontal axis running through the edge start point
+ * The angle output runs from -pi rad (-180 deg) to pi rad (180 deg) where 0 rad (0 deg) is the positive x axis
  * 
  * @param edge 
- * @returns 
+ * @returns number representing angle in radians off horizontal axis 
  */
 function angleOffAxis(edge: DirectedEdge): number{
   const [vecX, vecY] = edge.getVector();
-  const t = Math.atan2(vecY, vecX);
-  return t;
+  const angle = Math.atan2(vecY, vecX);
+  return angle;
 }
 
 /**
+ * Vertex class represents the 2d points in the DCEL graph
  * 
+ * edgeStar: consists of the edges in the graph that start at the given vertex, directed outward
  */
 class Vertex {
   name: string = "";
   x: number;
   y: number;
-
-  // describe edgestar
   edgeStar: DirectedEdge[] = []; 
 
   constructor(x: number, y: number) {
@@ -30,6 +39,11 @@ class Vertex {
   }
 
   /**
+   * Orders edges in edge star by the edge's angle off axis property
+   * 
+   * The edges will be ordered starting counter-clockwise from the -x axis through the vertex as a result of the output
+   * of the angleOffAxis function. Ordering the edges simplifies the process for finding neighboring edges while 
+   * traversing polygon cycles to create the DCEL
    * 
    */
   orderEdgeStar() {
@@ -38,9 +52,17 @@ class Vertex {
   }
 
   /**
+   * Returns the next directed edge in the edge star
    * 
-   * @param currentEdge 
-   * @returns 
+   * First we find the given edge's twin because the given edge does not originate at the vertex we are trying to 
+   * traverse and therefore will not be in the edge star. We find the edge twin through the directed edge properties. 
+   * Then search for the edge twin the the edge star. Selecting the next edge from the twin in the edge star ensures you 
+   * took the smallest right turn at the vertex while traversing from the input edge. 
+   * 
+   * See DirectedEdge class for edge twin description. See Vertex Class properties for edge star description. 
+   * 
+   * @param currentEdge a Directed edge where the endVertex is where we are turning from while traversing the polygon cycle
+   * @returns nextEdge as a DirectedEdge
    */
   getNextEdgeFromStar(currentEdge: DirectedEdge):DirectedEdge{
     const twinEdge = currentEdge.twin;
@@ -57,17 +79,24 @@ class Vertex {
 
 
 /**
- * describe directed edge / half edge and all of its members
+ * Directed edge class represents an edge in the DCEL graph. 
+ * 
+ * The Directed edge is directed in that the startVertex and endVertex are not interchangable. The Directed edge in the 
+ * reverse direction is defined as it's twin. Therefore, an undirected edge is defined by a directed edge and it's twin 
+ * For that reason, directed edges are also known as half-edges. Each directed edge can only be associated with one 
+ * polygon.
+ * 
+ * twin: the directed edge's pair with opposite start and end verticies. This property is always set when adding edge 
+ * twins in a DCEL graph. It is set after each directed edge is constructed. 
+ * angleOffAxis: the angle between the directed edge and the positive horizontal axis through the start point. 
+ * polygon: the polygon that the edge is associated with. Each edge can only be associated with one polygon in a DCEL
  */
 export class DirectedEdge {
   name: string = "";
   startVertex: Vertex;
   endVertex: Vertex;
-  // describe twin
-  twin!: DirectedEdge; //this property is always set when adding twins in DCEL 
-  // Describe angle off axis
+  twin!: DirectedEdge; 
   angleOffAxis: number;
-  // describe polygon
   polygon!: Polygon;
 
   constructor(v1: Vertex, v2: Vertex){
@@ -77,9 +106,10 @@ export class DirectedEdge {
   }
 
   /**
+   * Returns a 2d vector as [x,y] from the DirectedEdge startVertex to the endVertex
    * 
-   * @param this 
-   * @returns 
+   * @param this DirectedEdge
+   * @returns 2d vector as [x,y]
    */ 
   getVector(this: DirectedEdge):[number, number]{
     const Ax: number = this.startVertex.x;
@@ -91,17 +121,19 @@ export class DirectedEdge {
 } //closes DirectedEdge class
 
 /**
+ * Polygon class represents the polygons of a DCEL graph
  * 
+ * Polygons are defined by a list of their directed edges. The directed edges are ordered by the way they are traversed 
+ * around the polygon. The start/end edge is not integral to the definition- they can be shifted as long as the overall
+ * order remains the same.
  */
 export class Polygon{
   name: string = "";
-  // describe the order of the edges (i.e does order matter?)
   edges: DirectedEdge[] = [];
-  //neighbors: Polygon[] = [];
 
   /**
-   * 
-   * @returns 
+   * Checks if path of closed polygon is clockwise or counter-clockwise
+   * @returns true for CW path, false for CCW path
    */
   pathIsClockwise(): boolean{
     let total = 0;
@@ -124,7 +156,10 @@ export class Polygon{
 
 
 /**
+ * DCEL class represents the DCEL structure
  * 
+ * DCEL: doubly connected edge list data structure. (also known as a half-edge data structure) The class represents the 
+ * list of verticies, directed edges, and polygons the data structure is made of. 
  */
 export class DCEL{
   vertices: Vertex[] = [];
@@ -132,9 +167,16 @@ export class DCEL{
   polygons: Polygon[] = [];
 
   /**
+   * Adds an edge and its twin to a DCEL
    * 
-   * @param v1 
-   * @param v2 
+   * This function created and edge and its twin as directed edges. Once created it sets each directed edge's twin as 
+   * each other. It names the directed edges based on the number of edges in the graph. It adds each directed edge to 
+   * the DCEL. Lastly, it adds each directed edge to their respective start vertex edge stars.
+   * 
+   * O(1) constant time for each pair of vertices supplied
+   * 
+   * @param v1 Vertex 1
+   * @param v2 Vertex 2
    */
   addEdgeTwins(v1: Vertex, v2: Vertex){
     //create directed edge and twin for each given edge 
@@ -157,11 +199,28 @@ export class DCEL{
   }
 
   /**
+   * Creates a DCEL graph from given verticies and edges
    * 
-   * also  describe asymptotic behavior
+   * First, the function creates a vertex from each x,y coordinate pair in inputVerticies and adds it to the graph. Next, 
+   * it adds a directed edge and its twin for each edge in inputEdges to the graph using the addEdgeTwins function. Now 
+   * that we have all of the verticies and edges, we order the edge stars for each vertex. The graph is now prepared to 
+   * search for polygons. 
    * 
-   * @param inputVertices 
-   * @param inputEdges 
+   * To find all of the polygons we will visit all of the directed edges in a DFS. We will traverse the potential polygon 
+   * by choosing the smallest clockwise turn from each directed edge's end vertex. We do this by the vertex, 
+   * getNextEdgeFromStar function. When we return to the start edge, we know we have found a polygon. If it traverses in 
+   * a clockwise direction, we add the polygon to the graph and note the polygon for each DirectedEdge polygon property. 
+   * Otherwise, it is the polygon that represents the outer polygon. We never visit any directed edge twice, therefore 
+   * when we've visited all of the directed edges we have found all possible inside polygons.   
+   * 
+   * parameter format:
+   * inputVertices: [[x1,y1], [x2,y2], [x3,y3]...]
+   * inputEdges: [[startVertexIndex, endVertexIndex], [startVertexIndex, endVertexIndex]...]
+   * 
+   * O(n) where n is the number of supplied edges
+   * 
+   * @param inputVertices given as a list of x,y coordinates
+   * @param inputEdges  given as a list of index pairs into the inputVertices list
    */
   fromVerticiesEdges(inputVertices: number[][], inputEdges: number[][]){
     //add vertices to DCEL
@@ -223,8 +282,20 @@ export class DCEL{
   } 
 
   /**
-   *  does a thing. does it for some number of things
-   *  this should take O(n) time.
+   *  Creates a DCEL graph from given verticies and edges
+   * 
+   * First, the function creates a vertex from each x,y coordinate pair in inputVerticies and adds it to the graph. Next, 
+   * it adds a directed edge and its twin for each edge in inputEdges to the graph using the addEdgeTwins function. The 
+   * input format includes both the directed edge and and its twin, so every second edge can be skipped while using 
+   * addEdgeTwins. Now that we have all of the verticies and edges, we order the edge stars for each vertex. Lastly, we
+   * add each polygon by creating an array of Directed edges from the list of edge indexes. 
+   * 
+   * parameter format:
+   * inputVertices: [[x1,y1], [x2,y2], [x3,y3]...]
+   * inputEdges: [[startVertexIndex, endVertexIndex], [startVertexIndex, endVertexIndex]...]
+   * inputPolygons: [[edgeIndex1, edgeIndex2, edgeIndex3], [edgeIndex4, edgeIndex5, edgeIndex6]...]
+   * 
+   * O(n) time where n is the number of directed edges
    * describe asymptotic detail
    * 
    * @param inputVertices 
@@ -270,6 +341,17 @@ export class DCEL{
     }
   }
 
+  /**
+   * Returns the DCEL graph in a JSON format
+   * 
+   * Output format is defined by inteface jsonGraph
+   * Output format: {inputVertices: [[x1,y1], [x2,y2], [x3,y3]...]
+   *                 inputEdges: [[startVertexIndex, endVertexIndex], [startVertexIndex, endVertexIndex]...]
+   *                 inputPolygons: [[edgeIndex1, edgeIndex2, edgeIndex3], [edgeIndex4, edgeIndex5, edgeIndex6]...]
+   *                }
+   * 
+   * @returns jsonGraph of DCEL data structure
+   */
   toJSON():jsonGraph{
     let vertexForJson = [];
     for(let vertex of this.vertices){
@@ -303,11 +385,18 @@ export class DCEL{
   }
 
   /**
-   * describe that it goes through the polygon->edge[i]->edge[i].twin->polygon
-   * and that it's already built these references via the whatever function
-   * asymptotic behavior 
+   * Returns the neighbors of a polygon as an array of polygons
+   * 
+   * This function starts at a polygon and looks through each edge to find neighboring polygons. The existing references 
+   * with the DCEL data structure simplifies this process because edges know their twins and each of those twins will 
+   * know if they are associated with a polygon. Therefore, we can start at a polygon, go to each edge (edge[i]), then 
+   * to the twin of that edge (edge[i].twin), then to the associated polygon. If an associated polygon exists, we add it 
+   * to our neighbors array.
+   * 
+   * O(n) where n represents the number of edges in the polygon. 
+   * 
    * @param polygon 
-   * @returns 
+   * @returns polygon[] representing the neighboring polygons
    */
   findPolygonNeighbors(polygon: Polygon): Polygon[]{
     let allNeighbors: Polygon[] = []
@@ -321,9 +410,20 @@ export class DCEL{
   }
 
   /**
-   * asymptotic
-   * @param originPolygon 
-   * @returns 
+   * Returns neighbor layers as an array with an array of polygon names for each layer
+   * 
+   * This function performs a BFS to traverse the graph and find the neighbor layers from a given polygon. We start our 
+   * queue with the origin polygon and continue as long as our queue has polygons to visit. We never visit a polygon 
+   * twice. We keep track of which layer we are on with layerCount and the number of polygons of the queue we need to 
+   * visit for that layer with layerLength. As we traverse the graph, everytime we visit an unvisited polygon, we use 
+   * the findPolygonNeighbors to populate the queue with polygons we have not yet visited to be included in the 
+   * following layer. We are also creating the array of polygon names for that layer to be added to the main array. When
+   * our visitQueue is empty, we have been to all of the connected polygons. 
+   * 
+   * O(n): O(p + e) where p represents the number of polygons in the graph and e represents the connecting edges 
+   * 
+   * @param originPolygon the polygon to look for neighbor layers from
+   * @returns array of polygon names for each layer
    */
   findPolygonNeighborLayers(originPolygon: Polygon): string[][]{
     let neighborLayer: string[][] = [[]];
@@ -369,6 +469,7 @@ export class DCEL{
       }
       layerCount += 1;
     }
+    //remove last empty array
     neighborLayer.splice(neighborLayer.length-1,1);
     return neighborLayer;
   }
