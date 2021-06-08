@@ -11,15 +11,15 @@ import {pointInPolygon, Point} from "./PointInPolygon"
  * 
  * Additionally, the vertex, directed edge, and polygon class properties simplify the process of traversing the 
  * graph for future algorithms. It is self referential in that vertices know what edges originate from them and edges 
- * know their start/end vertices. Edges know themself and their pair twin. Edges know what polygon they are a part of 
- * and polygons know their edges. Each of these elements holding on to this information makes it really easy to travel 
- * across the graph. 
+ * know their start/end vertices. Edges know their twin- the directed edge with a reverse direction. Edges know what 
+ * polygon they are a part of and polygons know their edges. Each of these elements holding on to this information makes 
+ * it really easy to travel across the graph. 
  * 
  * The bulk of the work for this algorithm is done with the fromVerticesEdges function. It formats the given vertex and
  * edge data in the DCEL structure and then does a DFS of the edges to find the polygon cycles. The time complexity is 
  * O(n) where n is the number of edges. 
  * 
- * As a last step, this algorithm formats the DCEL in a json format where edges refer to vertices by their index in the 
+ * As a last step, this algorithm outputs the DCEL in a json format where edges refer to vertices by their index in the 
  * vertex array, and polygons refer to edges by their index in the edge array. This format replaces the self referential 
  * nature of the DCEL class, but also makes it easy to recreate the DCEL data structure as a DCEL class object. 
  * 
@@ -32,7 +32,7 @@ export function algorithm1(inputData:{vertices: number[][];edges: number[][];}):
     //creates DCEL data structure with the DCEL class
     let myDCEL = new DCEL();
     let input = inputData;
-    myDCEL.fromVerticiesEdges(input.vertices, input.edges)
+    myDCEL.fromVerticesEdges(input.vertices, input.edges)
     // console.log(myDCEL);
     
     //formats DCEL data structure in a json format
@@ -55,13 +55,13 @@ export function algorithm1(inputData:{vertices: number[][];edges: number[][];}):
  * 
  * @param inFromA1 the jsonGraph of the DCEL generated in algorithm1
  * @param originPolygonIndex index of origin polygon from the json graph
- * @returns 
+ * @returns index of origin polygon and string of polygon neighbor names
  */
 export function algorithm2(inFromA1: jsonGraph, originPolygonIndex: number){
     console.log("algorithm 2");
     
     let myDCEL = new DCEL();
-    myDCEL.fromVerticiesEdgesPolygons(inFromA1.vertices, inFromA1.edges, inFromA1.polygons);
+    myDCEL.fromVerticesEdgesPolygons(inFromA1.vertices, inFromA1.edges, inFromA1.polygons);
     //console.log(myDCEL);
 
     //check index of polygon lands within polygon list length
@@ -96,8 +96,10 @@ export function algorithm2(inFromA1: jsonGraph, originPolygonIndex: number){
  * Therefore, the known edited version of the winding number algorithm seemed to be the best option forward . A 
  * description of this algorithm can be found with the windingNumber function in PointInPolygon.tsx
  * 
- * The time complexity of this algorithm is O(n) where n is the number of polygons in the given graph
- * 
+ * The time complexity of this algorithm is O(p) where p is the number of polygons in the given graph, but for each 
+ * polygon, O(e) where n represents the number of edges for that polygon. Therefore, the worst case where the point is 
+ * not in any polygon is O(n), where n is the number of edges in the graph because we would look at every edge for every
+ * polygon.  
  * 
  * @param inFromA1 the jsonGraph of the DCEL generated in algorithm1
  * @param pointCoordinates the x,y coordinate of the point in question
@@ -108,7 +110,7 @@ export function algorithm3(inFromA1: jsonGraph, pointCoordinates:[number, number
     
     //format graph data as DCEL
     const myDCEL = new DCEL();
-    myDCEL.fromVerticiesEdgesPolygons(inFromA1.vertices, inFromA1.edges, inFromA1.polygons);
+    myDCEL.fromVerticesEdgesPolygons(inFromA1.vertices, inFromA1.edges, inFromA1.polygons);
     
     //define point for pointInPolygon inputs
     const point: Point = {x:pointCoordinates[0],y:pointCoordinates[1]};
@@ -157,7 +159,7 @@ export function algorithm4(inFromA1: jsonGraph, originPolygonIndex: number){
     
     // format output from algorithm1 back to DCEL
     const myDCEL = new DCEL();
-    myDCEL.fromVerticiesEdgesPolygons(inFromA1.vertices, inFromA1.edges, inFromA1.polygons);
+    myDCEL.fromVerticesEdgesPolygons(inFromA1.vertices, inFromA1.edges, inFromA1.polygons);
     // console.log(myDCEL);
 
     // check index of polygon lands within polygon list length

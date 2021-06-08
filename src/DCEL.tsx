@@ -1,4 +1,4 @@
-import {jsonGraph, stringBuilder} from "./Utils"
+import {jsonGraph} from "./Utils"
 
 //general functions
 /** brief, one line description
@@ -56,7 +56,7 @@ class Vertex {
    * 
    * First we find the given edge's twin because the given edge does not originate at the vertex we are trying to 
    * traverse and therefore will not be in the edge star. We find the edge twin through the directed edge properties. 
-   * Then search for the edge twin the the edge star. Selecting the next edge from the twin in the edge star ensures you 
+   * Then search for the edge twin in the edge star. Selecting the next edge from the twin in the edge star ensures you 
    * took the smallest right turn at the vertex while traversing from the input edge. 
    * 
    * See DirectedEdge class for edge twin description. See Vertex Class properties for edge star description. 
@@ -211,7 +211,7 @@ export class DCEL{
    * getNextEdgeFromStar function. When we return to the start edge, we know we have found a polygon. If it traverses in 
    * a clockwise direction, we add the polygon to the graph and note the polygon for each DirectedEdge polygon property. 
    * Otherwise, it is the polygon that represents the outer polygon. We never visit any directed edge twice, therefore 
-   * when we've visited all of the directed edges we have found all possible inside polygons.   
+   * when we've visited all of the directed edges we have found all possible smallest polygons.   
    * 
    * parameter format:
    * inputVertices: [[x1,y1], [x2,y2], [x3,y3]...]
@@ -222,7 +222,7 @@ export class DCEL{
    * @param inputVertices given as a list of x,y coordinates
    * @param inputEdges  given as a list of index pairs into the inputVertices list
    */
-  fromVerticiesEdges(inputVertices: number[][], inputEdges: number[][]){
+  fromVerticesEdges(inputVertices: number[][], inputEdges: number[][]){
     //add vertices to DCEL
     for(let [x, y] of inputVertices){
       const vertex = new Vertex(x,y);
@@ -296,13 +296,12 @@ export class DCEL{
    * inputPolygons: [[edgeIndex1, edgeIndex2, edgeIndex3], [edgeIndex4, edgeIndex5, edgeIndex6]...]
    * 
    * O(n) time where n is the number of directed edges
-   * describe asymptotic detail
    * 
    * @param inputVertices 
    * @param inputEdges 
    * @param inputPolygons 
    */
-  fromVerticiesEdgesPolygons(inputVertices: number[][], inputEdges: number[][], inputPolygons: number[][]){
+  fromVerticesEdgesPolygons(inputVertices: number[][], inputEdges: number[][], inputPolygons: number[][]){
     //add vertices to DCEL
     for(let [x, y] of inputVertices){
       const vertex = new Vertex(x,y);
@@ -438,11 +437,6 @@ export class DCEL{
       neighborLayer.push([]);
 
       for(let i=0; i<layerLength; i++){
-        let pname = ""
-        for(let ptest of visitQueue){
-          pname = stringBuilder(pname, ptest.name)
-        }
-
         //get polygon and remove from queue
         let currentPolygon = visitQueue[0];
         visitQueue.splice(0,1);
@@ -473,11 +467,6 @@ export class DCEL{
     neighborLayer.splice(neighborLayer.length-1,1);
     return neighborLayer;
   }
-
-  checkOutsideInputs(){
-    //check for invalid inputs
-  }
-
 } //closes DCEL class
 
 
