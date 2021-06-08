@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/typescriptDCEL/static/css/main.6cc47ff2.chunk.css",
-    "main.js": "/typescriptDCEL/static/js/main.ad70433b.chunk.js",
-    "main.js.map": "/typescriptDCEL/static/js/main.ad70433b.chunk.js.map",
+    "main.js": "/typescriptDCEL/static/js/main.9c72c130.chunk.js",
+    "main.js.map": "/typescriptDCEL/static/js/main.9c72c130.chunk.js.map",
     "runtime-main.js": "/typescriptDCEL/static/js/runtime-main.7a6facd9.js",
     "runtime-main.js.map": "/typescriptDCEL/static/js/runtime-main.7a6facd9.js.map",
     "static/js/2.35bf273b.chunk.js": "/typescriptDCEL/static/js/2.35bf273b.chunk.js",
@@ -17,6 +17,6 @@
     "static/js/runtime-main.7a6facd9.js",
     "static/js/2.35bf273b.chunk.js",
     "static/css/main.6cc47ff2.chunk.css",
-    "static/js/main.ad70433b.chunk.js"
+    "static/js/main.9c72c130.chunk.js"
   ]
 }
