@@ -94,7 +94,8 @@ export class GraphSVG extends React.Component<IProps> {
                 id = {id}
                 key = {uniqueKey}
                 fill={randomColor}
-                points={pointSets[i]}>        
+                points={pointSets[i]}> 
+                <title>{id}</title>
             </polygon>)
       }
       return polygons
