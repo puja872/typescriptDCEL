@@ -20,7 +20,7 @@ Builds the app for production to the build folder.
 &nbsp;
 ## Live Version
 
-[Link String][http://github.com/pujapatel/higharc.git.io]  
+https://puja872.github.io/typescriptDCEL/
 
 &nbsp;
 ## Directory Layout
